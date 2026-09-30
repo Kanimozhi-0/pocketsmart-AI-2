@@ -1,0 +1,2137 @@
+from flask import Flask, request, jsonify, render_template_string
+
+app = Flask(__name__)
+
+HTML = r"""
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>PocketSmart AI</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    font-family:Arial,Helvetica,sans-serif;
+    background:#080612;
+    color:white;
+}
+
+/* NAVBAR */
+
+.navbar{
+    position:sticky;
+    top:0;
+    z-index:1000;
+
+    height:75px;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    padding:0 7%;
+
+    background:rgba(8,6,18,.95);
+
+    border-bottom:1px solid #29223a;
+}
+
+.logo{
+    font-size:24px;
+    font-weight:bold;
+}
+
+.logo span{
+    color:#c084fc;
+}
+
+.logo b{
+    color:#a78bfa;
+}
+
+.navlinks{
+    display:flex;
+    gap:35px;
+}
+
+.navlinks a{
+    color:#aaa;
+    text-decoration:none;
+}
+
+.navlinks a:hover{
+    color:#c084fc;
+}
+
+.navbutton{
+    padding:11px 20px;
+
+    background:#8b5cf6;
+    color:white;
+
+    border:0;
+    border-radius:10px;
+
+    cursor:pointer;
+}
+
+/* HERO */
+
+.hero{
+    min-height:650px;
+
+    padding:80px 8%;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+
+    background:
+    radial-gradient(
+        circle at 75% 45%,
+        rgba(139,92,246,.28),
+        transparent 35%
+    );
+}
+
+.heroText{
+    max-width:650px;
+}
+
+.badge{
+    display:inline-block;
+
+    padding:9px 15px;
+
+    border:1px solid #513a72;
+
+    background:#171025;
+
+    color:#c084fc;
+
+    border-radius:30px;
+
+    margin-bottom:25px;
+}
+
+.hero h1{
+    font-size:65px;
+    line-height:1.05;
+
+    margin-bottom:25px;
+}
+
+.hero h1 span{
+    background:linear-gradient(
+        90deg,
+        #c084fc,
+        #60a5fa
+    );
+
+    -webkit-background-clip:text;
+    color:transparent;
+}
+
+.hero p{
+    color:#999;
+
+    font-size:18px;
+
+    line-height:1.7;
+}
+
+.buttons{
+    display:flex;
+    gap:15px;
+
+    margin-top:30px;
+}
+
+.primary{
+    padding:15px 25px;
+
+    border:0;
+    border-radius:10px;
+
+    background:#8b5cf6;
+    color:white;
+
+    cursor:pointer;
+
+    font-size:15px;
+}
+
+.secondary{
+    padding:15px 25px;
+
+    border:1px solid #40364f;
+
+    border-radius:10px;
+
+    background:transparent;
+
+    color:white;
+
+    cursor:pointer;
+}
+
+.platforms{
+    display:flex;
+    flex-wrap:wrap;
+
+    gap:10px;
+
+    margin-top:35px;
+}
+
+.platforms span{
+    padding:7px 12px;
+
+    background:#171321;
+
+    border-radius:7px;
+
+    color:#999;
+
+    font-size:13px;
+}
+
+/* HERO AI */
+
+.heroAI{
+    width:400px;
+    height:400px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    position:relative;
+}
+
+.aiCircle{
+    width:230px;
+    height:230px;
+
+    border-radius:50%;
+
+    display:flex;
+    flex-direction:column;
+
+    justify-content:center;
+    align-items:center;
+
+    background:
+    radial-gradient(
+        circle,
+        #7c3aed,
+        #201037
+    );
+
+    box-shadow:
+    0 0 100px rgba(139,92,246,.45);
+}
+
+.aiCircle .brain{
+    font-size:70px;
+}
+
+.aiCircle strong{
+    letter-spacing:5px;
+}
+
+.floatCard{
+    position:absolute;
+
+    padding:15px 18px;
+
+    display:flex;
+    gap:10px;
+
+    background:#171321;
+
+    border:1px solid #332a43;
+
+    border-radius:14px;
+
+    box-shadow:0 15px 40px #0008;
+}
+
+.floatCard small{
+    display:block;
+    color:#888;
+}
+
+.floatCard strong{
+    font-size:19px;
+}
+
+.card1{
+    top:45px;
+    left:0;
+}
+
+.card2{
+    bottom:45px;
+    right:0;
+}
+
+/* STATS */
+
+.stats{
+    display:grid;
+
+    grid-template-columns:repeat(4,1fr);
+
+    padding:35px 8%;
+
+    background:#0e0a16;
+
+    border-top:1px solid #241e30;
+    border-bottom:1px solid #241e30;
+
+    text-align:center;
+}
+
+.stats h2{
+    color:#c084fc;
+}
+
+.stats p{
+    color:#888;
+    margin-top:7px;
+}
+
+/* SECTION */
+
+section{
+    scroll-margin-top:80px;
+}
+
+.section{
+    padding:100px 8%;
+}
+
+.heading{
+    text-align:center;
+    max-width:700px;
+
+    margin:auto;
+}
+
+.heading small{
+    color:#a78bfa;
+    letter-spacing:2px;
+}
+
+.heading h2{
+    font-size:40px;
+
+    margin:15px 0;
+}
+
+.heading p{
+    color:#888;
+    line-height:1.7;
+}
+
+/* PLANNERS */
+
+.planners{
+    display:grid;
+
+    grid-template-columns:
+    repeat(3,1fr);
+
+    gap:25px;
+
+    margin-top:50px;
+}
+
+.planner{
+    padding:30px;
+
+    background:#13101d;
+
+    border:1px solid #2b2437;
+
+    border-radius:20px;
+
+    cursor:pointer;
+
+    transition:.3s;
+}
+
+.planner:hover{
+    transform:translateY(-8px);
+
+    border-color:#8b5cf6;
+
+    box-shadow:
+    0 20px 50px #7c3aed22;
+}
+
+.icon{
+    width:60px;
+    height:60px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:15px;
+
+    font-size:30px;
+
+    background:#211833;
+
+    margin-bottom:20px;
+}
+
+.planner h3{
+    font-size:23px;
+
+    margin-bottom:12px;
+}
+
+.planner p{
+    color:#888;
+
+    line-height:1.6;
+}
+
+.tags{
+    display:flex;
+
+    flex-wrap:wrap;
+
+    gap:7px;
+
+    margin:20px 0;
+}
+
+.tags span{
+    padding:6px 9px;
+
+    background:#211b2d;
+
+    color:#999;
+
+    border-radius:7px;
+
+    font-size:12px;
+}
+
+.planButton{
+    width:100%;
+
+    padding:12px;
+
+    background:transparent;
+
+    border:1px solid #493a5d;
+
+    border-radius:9px;
+
+    color:white;
+
+    cursor:pointer;
+}
+
+/* FORM */
+
+.plannerArea{
+    background:
+    linear-gradient(
+        180deg,
+        #0d0915,
+        #120d1d
+    );
+}
+
+.formBox{
+    max-width:700px;
+
+    margin:50px auto 0;
+
+    padding:35px;
+
+    background:#13101d;
+
+    border:1px solid #2c2438;
+
+    border-radius:20px;
+}
+
+.formGroup{
+    margin-bottom:20px;
+}
+
+.formGroup label{
+    display:block;
+
+    color:#ddd;
+
+    margin-bottom:8px;
+}
+
+input,
+select{
+    width:100%;
+
+    padding:14px;
+
+    background:#191522;
+
+    color:white;
+
+    border:1px solid #352b42;
+
+    border-radius:10px;
+
+    outline:none;
+}
+
+input:focus,
+select:focus{
+    border-color:#8b5cf6;
+}
+
+.money{
+    position:relative;
+}
+
+.money span{
+    position:absolute;
+
+    left:14px;
+    top:14px;
+
+    color:#c084fc;
+}
+
+.money input{
+    padding-left:32px;
+}
+
+.two{
+    display:grid;
+
+    grid-template-columns:1fr 1fr;
+
+    gap:15px;
+}
+
+.fields{
+    margin-top:15px;
+}
+
+.hidden{
+    display:none !important;
+}
+
+.upload{
+    padding:25px;
+
+    border:1px dashed #514467;
+
+    border-radius:12px;
+
+    text-align:center;
+
+    color:#888;
+
+    margin-bottom:20px;
+}
+
+.generate{
+    width:100%;
+
+    padding:16px;
+
+    background:
+    linear-gradient(
+        90deg,
+        #7c3aed,
+        #9333ea
+    );
+
+    border:0;
+
+    border-radius:10px;
+
+    color:white;
+
+    font-size:16px;
+
+    font-weight:bold;
+
+    cursor:pointer;
+}
+
+/* RESULTS */
+
+.results{
+    padding:100px 8%;
+
+    background:#0b0811;
+}
+
+.resultGrid{
+    max-width:900px;
+
+    margin:50px auto 0;
+
+    display:grid;
+
+    grid-template-columns:1fr 1fr;
+
+    gap:20px;
+}
+
+.resultCard{
+    padding:25px;
+
+    background:#15111f;
+
+    border:1px solid #30273e;
+
+    border-radius:16px;
+}
+
+.resultIcon{
+    font-size:30px;
+}
+
+.resultCard h3{
+    margin:15px 0 8px;
+}
+
+.resultCard p{
+    color:#888;
+
+    line-height:1.5;
+}
+
+.resultBottom{
+    display:flex;
+
+    align-items:center;
+    justify-content:space-between;
+
+    margin-top:20px;
+}
+
+.price{
+    color:#c084fc;
+
+    font-weight:bold;
+}
+
+.platform{
+    padding:7px 10px;
+
+    background:#261e34;
+
+    border-radius:7px;
+
+    color:#aaa;
+
+    font-size:12px;
+}
+
+/* HOW */
+
+.steps{
+    max-width:900px;
+
+    margin:50px auto 0;
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(3,1fr);
+
+    gap:25px;
+}
+
+.step{
+    padding:25px;
+
+    background:#13101d;
+
+    border:1px solid #2b2437;
+
+    border-radius:15px;
+}
+
+.stepNumber{
+    font-size:25px;
+
+    color:#a78bfa;
+
+    font-weight:bold;
+
+    margin-bottom:20px;
+}
+
+.step h3{
+    margin-bottom:10px;
+}
+
+.step p{
+    color:#888;
+
+    line-height:1.6;
+}
+
+/* FOOTER */
+
+footer{
+    padding:50px 8%;
+
+    text-align:center;
+
+    background:#07050b;
+
+    border-top:1px solid #211c2d;
+}
+
+footer p{
+    color:#777;
+
+    margin-top:10px;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:900px){
+
+    .navlinks{
+        display:none;
+    }
+
+    .hero{
+        flex-direction:column;
+
+        text-align:center;
+    }
+
+    .heroAI{
+        margin-top:60px;
+    }
+
+    .planners{
+        grid-template-columns:1fr;
+    }
+
+    .stats{
+        grid-template-columns:1fr 1fr;
+
+        gap:30px;
+    }
+
+    .steps{
+        grid-template-columns:1fr;
+    }
+
+}
+
+@media(max-width:600px){
+
+    .hero h1{
+        font-size:45px;
+    }
+
+    .heroAI{
+        width:320px;
+    }
+
+    .stats{
+        grid-template-columns:1fr;
+    }
+
+    .two{
+        grid-template-columns:1fr;
+    }
+
+    .resultGrid{
+        grid-template-columns:1fr;
+    }
+
+    .navbutton{
+        display:none;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<!-- NAVBAR -->
+
+<nav class="navbar">
+
+    <div class="logo">
+        <span>💜</span> PocketSmart <b>AI</b>
+    </div>
+
+    <div class="navlinks">
+
+        <a href="#home">Home</a>
+
+        <a href="#planners">Planners</a>
+
+        <a href="#how">How It Works</a>
+
+    </div>
+
+    <button class="navbutton"
+            onclick="goTo('planners')">
+
+        Start Planning
+
+    </button>
+
+</nav>
+
+
+<!-- HERO -->
+
+<section class="hero" id="home">
+
+    <div class="heroText">
+
+        <div class="badge">
+            ✨ GenAI Powered Budget Planner
+        </div>
+
+        <h1>
+            Plan Smart.<br>
+            <span>Spend Smarter.</span>
+        </h1>
+
+        <p>
+            PocketSmart AI helps you plan your home,
+            parties and jewelry while keeping everything
+            within your defined budget.
+        </p>
+
+        <div class="buttons">
+
+            <button class="primary"
+                    onclick="goTo('planners')">
+
+                Start Planning →
+
+            </button>
+
+            <button class="secondary"
+                    onclick="goTo('how')">
+
+                How It Works
+
+            </button>
+
+        </div>
+
+        <div class="platforms">
+
+            <span>Amazon</span>
+            <span>Flipkart</span>
+            <span>IKEA</span>
+            <span>Swiggy</span>
+            <span>Zomato</span>
+            <span>OYO</span>
+
+        </div>
+
+    </div>
+
+
+    <div class="heroAI">
+
+        <div class="aiCircle">
+
+            <div class="brain">
+                🧠
+            </div>
+
+            <strong>AI</strong>
+
+        </div>
+
+        <div class="floatCard card1">
+
+            💰
+
+            <div>
+
+                <small>Budget Saved</small>
+
+                <strong>₹4,250</strong>
+
+            </div>
+
+        </div>
+
+        <div class="floatCard card2">
+
+            ✨
+
+            <div>
+
+                <small>Smart Match</small>
+
+                <strong>96%</strong>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- STATS -->
+
+<div class="stats">
+
+    <div>
+        <h2>3+</h2>
+        <p>Smart Planners</p>
+    </div>
+
+    <div>
+        <h2>6+</h2>
+        <p>Platforms</p>
+    </div>
+
+    <div>
+        <h2>100%</h2>
+        <p>Budget Focused</p>
+    </div>
+
+    <div>
+        <h2>AI</h2>
+        <p>Powered</p>
+    </div>
+
+</div>
+
+
+<!-- PLANNERS -->
+
+<section class="section" id="planners">
+
+    <div class="heading">
+
+        <small>SMART PLANNERS</small>
+
+        <h2>
+            What are you planning?
+        </h2>
+
+        <p>
+            Select a planner and create a personalized
+            budget recommendation.
+        </p>
+
+    </div>
+
+
+    <div class="planners">
+
+
+        <!-- HOME -->
+
+        <div class="planner"
+             onclick="selectPlanner('home')">
+
+            <div class="icon">
+                🏠
+            </div>
+
+            <h3>
+                Home Interior
+            </h3>
+
+            <p>
+                Plan furniture, lighting, fans,
+                dining tables and home decor.
+            </p>
+
+            <div class="tags">
+
+                <span>Furniture</span>
+                <span>Lighting</span>
+                <span>Decor</span>
+
+            </div>
+
+            <button class="planButton">
+                Plan My Home →
+            </button>
+
+        </div>
+
+
+        <!-- PARTY -->
+
+        <div class="planner"
+             onclick="selectPlanner('party')">
+
+            <div class="icon">
+                🎉
+            </div>
+
+            <h3>
+                Party Planner
+            </h3>
+
+            <p>
+                Plan catering, decoration,
+                entertainment and accommodation.
+            </p>
+
+            <div class="tags">
+
+                <span>Catering</span>
+                <span>Decoration</span>
+                <span>Entertainment</span>
+
+            </div>
+
+            <button class="planButton">
+                Plan My Party →
+            </button>
+
+        </div>
+
+
+        <!-- JEWELRY -->
+
+        <div class="planner"
+             onclick="selectPlanner('jewelry')">
+
+            <div class="icon">
+                💎
+            </div>
+
+            <h3>
+                Jewelry Planner
+            </h3>
+
+            <p>
+                Find jewelry based on occasion,
+                style and your budget.
+            </p>
+
+            <div class="tags">
+
+                <span>Necklaces</span>
+                <span>Earrings</span>
+                <span>Accessories</span>
+
+            </div>
+
+            <button class="planButton">
+                Find My Jewelry →
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- FORM -->
+
+<section class="section plannerArea"
+         id="plannerArea">
+
+    <div class="heading">
+
+        <small id="plannerLabel">
+            SMART PLANNER
+        </small>
+
+        <h2 id="formTitle">
+            Let's plan your budget
+        </h2>
+
+        <p>
+            Enter your requirements and generate
+            personalized recommendations.
+        </p>
+
+    </div>
+
+
+    <div class="formBox">
+
+        <form id="form">
+
+
+            <!-- BUDGET -->
+
+            <div class="formGroup">
+
+                <label>
+                    💰 Total Budget
+                </label>
+
+                <div class="money">
+
+                    <span>₹</span>
+
+                    <input
+                        type="number"
+                        id="budget"
+                        placeholder="Enter your budget"
+                        min="1"
+                        required
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- HOME -->
+
+            <div id="homeFields"
+                 class="fields">
+
+                <div class="formGroup">
+
+                    <label>
+                        Room Type
+                    </label>
+
+                    <select id="room">
+
+                        <option>Living Room</option>
+                        <option>Bedroom</option>
+                        <option>Kitchen</option>
+                        <option>Dining Room</option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="two">
+
+                    <div class="formGroup">
+
+                        <label>
+                            Number of Lights
+                        </label>
+
+                        <input
+                            type="number"
+                            id="lights"
+                            value="2"
+                            min="0"
+                        >
+
+                    </div>
+
+
+                    <div class="formGroup">
+
+                        <label>
+                            Ceiling Fans
+                        </label>
+
+                        <input
+                            type="number"
+                            id="fans"
+                            value="1"
+                            min="0"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="formGroup">
+
+                    <label>
+                        Tables / Furniture
+                    </label>
+
+                    <input
+                        type="number"
+                        id="tables"
+                        value="1"
+                        min="0"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <!-- PARTY -->
+
+            <div id="partyFields"
+                 class="fields hidden">
+
+                <div class="formGroup">
+
+                    <label>
+                        Event Type
+                    </label>
+
+                    <select id="event">
+
+                        <option>Birthday</option>
+                        <option>Wedding</option>
+                        <option>Corporate Event</option>
+                        <option>Engagement</option>
+                        <option>Family Function</option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="formGroup">
+
+                    <label>
+                        Number of Guests
+                    </label>
+
+                    <input
+                        type="number"
+                        id="guests"
+                        value="20"
+                        min="1"
+                    >
+
+                </div>
+
+
+                <div class="formGroup">
+
+                    <label>
+                        Venue
+                    </label>
+
+                    <select id="venue">
+
+                        <option>Home</option>
+                        <option>Banquet Hall</option>
+                        <option>Outdoor</option>
+                        <option>Hotel</option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <!-- JEWELRY -->
+
+            <div id="jewelryFields"
+                 class="fields hidden">
+
+                <div class="formGroup">
+
+                    <label>
+                        Occasion
+                    </label>
+
+                    <select id="occasion">
+
+                        <option>Wedding</option>
+                        <option>Engagement</option>
+                        <option>Birthday</option>
+                        <option>Festival</option>
+                        <option>Party</option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="formGroup">
+
+                    <label>
+                        Style Preference
+                    </label>
+
+                    <select id="style">
+
+                        <option>Traditional</option>
+                        <option>Modern</option>
+                        <option>Minimal</option>
+                        <option>Elegant</option>
+                        <option>Bridal</option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="upload">
+
+                    📸
+
+                    <br><br>
+
+                    Upload Outfit Image
+
+                    <br><br>
+
+                    <input
+                        type="file"
+                        accept="image/*"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <button class="generate"
+                    type="submit">
+
+                ✨ Generate AI Recommendations
+
+            </button>
+
+
+        </form>
+
+    </div>
+
+</section>
+
+
+<!-- RESULTS -->
+
+<section class="results hidden"
+         id="results">
+
+    <div class="heading">
+
+        <small>
+            AI RECOMMENDATIONS
+        </small>
+
+        <h2>
+            Your Smart Budget Plan
+        </h2>
+
+        <p id="summary"></p>
+
+    </div>
+
+
+    <div class="resultGrid"
+         id="resultGrid">
+
+    </div>
+
+</section>
+
+
+<!-- HOW IT WORKS -->
+
+<section class="section"
+         id="how">
+
+    <div class="heading">
+
+        <small>
+            HOW IT WORKS
+        </small>
+
+        <h2>
+            Smart planning in 3 simple steps
+        </h2>
+
+    </div>
+
+
+    <div class="steps">
+
+        <div class="step">
+
+            <div class="stepNumber">
+                01
+            </div>
+
+            <h3>
+                Set Your Budget
+            </h3>
+
+            <p>
+                Enter the amount you are comfortable
+                spending for your requirement.
+            </p>
+
+        </div>
+
+
+        <div class="step">
+
+            <div class="stepNumber">
+                02
+            </div>
+
+            <h3>
+                Tell Us Your Needs
+            </h3>
+
+            <p>
+                Select your category and provide
+                your preferences.
+            </p>
+
+        </div>
+
+
+        <div class="step">
+
+            <div class="stepNumber">
+                03
+            </div>
+
+            <h3>
+                Get Recommendations
+            </h3>
+
+            <p>
+                PocketSmart AI creates a personalized
+                budget allocation and suggestions.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- FOOTER -->
+
+<footer>
+
+    <div class="logo">
+        💜 PocketSmart AI
+    </div>
+
+    <p>
+        Intelligent budgeting powered by AI.
+    </p>
+
+    <p>
+        © 2026 PocketSmart AI
+    </p>
+
+</footer>
+
+
+<script>
+
+let selectedPlanner = "home";
+
+
+function goTo(id){
+
+    document.getElementById(id)
+    .scrollIntoView({
+        behavior:"smooth"
+    });
+
+}
+
+
+function selectPlanner(type){
+
+    selectedPlanner = type;
+
+
+    document
+    .getElementById("plannerArea")
+    .scrollIntoView({
+        behavior:"smooth"
+    });
+
+
+    const home =
+    document.getElementById("homeFields");
+
+    const party =
+    document.getElementById("partyFields");
+
+    const jewelry =
+    document.getElementById("jewelryFields");
+
+
+    home.classList.add("hidden");
+    party.classList.add("hidden");
+    jewelry.classList.add("hidden");
+
+
+    if(type === "home"){
+
+        home.classList.remove("hidden");
+
+        document
+        .getElementById("plannerLabel")
+        .innerText =
+        "HOME INTERIOR PLANNER";
+
+        document
+        .getElementById("formTitle")
+        .innerText =
+        "Design your dream home";
+
+    }
+
+
+    if(type === "party"){
+
+        party.classList.remove("hidden");
+
+        document
+        .getElementById("plannerLabel")
+        .innerText =
+        "PARTY BUDGET PLANNER";
+
+        document
+        .getElementById("formTitle")
+        .innerText =
+        "Plan your perfect event";
+
+    }
+
+
+    if(type === "jewelry"){
+
+        jewelry.classList.remove("hidden");
+
+        document
+        .getElementById("plannerLabel")
+        .innerText =
+        "JEWELRY BUDGET PLANNER";
+
+        document
+        .getElementById("formTitle")
+        .innerText =
+        "Find your perfect jewelry";
+
+    }
+
+}
+
+
+document
+.getElementById("form")
+.addEventListener("submit", async function(e){
+
+    e.preventDefault();
+
+
+    const budget =
+    document.getElementById("budget").value;
+
+
+    if(!budget || budget <= 0){
+
+        alert("Please enter a valid budget.");
+
+        return;
+
+    }
+
+
+    let data = {
+
+        planner:selectedPlanner,
+
+        budget:budget
+
+    };
+
+
+    if(selectedPlanner === "home"){
+
+        data.room =
+        document.getElementById("room").value;
+
+        data.lights =
+        document.getElementById("lights").value;
+
+        data.fans =
+        document.getElementById("fans").value;
+
+        data.tables =
+        document.getElementById("tables").value;
+
+    }
+
+
+    if(selectedPlanner === "party"){
+
+        data.event =
+        document.getElementById("event").value;
+
+        data.guests =
+        document.getElementById("guests").value;
+
+        data.venue =
+        document.getElementById("venue").value;
+
+    }
+
+
+    if(selectedPlanner === "jewelry"){
+
+        data.occasion =
+        document.getElementById("occasion").value;
+
+        data.style =
+        document.getElementById("style").value;
+
+    }
+
+
+    const button =
+    document.querySelector(".generate");
+
+
+    button.innerText =
+    "🤖 AI is generating...";
+
+
+    button.disabled = true;
+
+
+    try{
+
+        const response =
+        await fetch(
+            "/recommend",
+            {
+                method:"POST",
+
+                headers:{
+                    "Content-Type":
+                    "application/json"
+                },
+
+                body:
+                JSON.stringify(data)
+            }
+        );
+
+
+        const result =
+        await response.json();
+
+
+        if(result.success){
+
+            displayResults(result);
+
+        }
+
+    }
+
+    catch(error){
+
+        alert(
+            "Unable to generate recommendations."
+        );
+
+        console.log(error);
+
+    }
+
+
+    button.innerText =
+    "✨ Generate AI Recommendations";
+
+    button.disabled = false;
+
+});
+
+
+function displayResults(result){
+
+    const results =
+    document.getElementById("results");
+
+    const grid =
+    document.getElementById("resultGrid");
+
+    const summary =
+    document.getElementById("summary");
+
+
+    grid.innerHTML = "";
+
+
+    summary.innerText =
+    "Budget ₹" +
+    Number(result.budget)
+    .toLocaleString("en-IN") +
+    " has been intelligently allocated for your plan.";
+
+
+    const icons =
+    ["💡","🛋️","✨","🎯"];
+
+
+    result.recommendations
+    .forEach(function(item,index){
+
+        const card =
+        document.createElement("div");
+
+
+        card.className =
+        "resultCard";
+
+
+        card.innerHTML = `
+
+            <div class="resultIcon">
+                ${icons[index % icons.length]}
+            </div>
+
+            <h3>
+                ${item.title}
+            </h3>
+
+            <p>
+                ${item.description}
+            </p>
+
+            <div class="resultBottom">
+
+                <span class="price">
+                    ${item.budget}
+                </span>
+
+                <span class="platform">
+                    ${item.platform}
+                </span>
+
+            </div>
+
+        `;
+
+
+        grid.appendChild(card);
+
+    });
+
+
+    results.classList.remove("hidden");
+
+
+    results.scrollIntoView({
+        behavior:"smooth"
+    });
+
+}
+
+</script>
+
+</body>
+
+</html>
+"""
+
+
+# ---------------- HOME PAGE ----------------
+
+@app.route("/")
+def home():
+
+    return render_template_string(HTML)
+
+
+# ---------------- RECOMMENDATION API ----------------
+
+@app.route("/recommend", methods=["POST"])
+def recommend():
+
+    data = request.get_json()
+
+    planner = data.get("planner")
+
+    try:
+        budget = float(data.get("budget", 0))
+    except:
+        budget = 0
+
+
+    recommendations = []
+
+
+    # HOME INTERIOR
+
+    if planner == "home":
+
+        room = data.get(
+            "room",
+            "Living Room"
+        )
+
+        lights = data.get(
+            "lights",
+            2
+        )
+
+        fans = data.get(
+            "fans",
+            1
+        )
+
+        tables = data.get(
+            "tables",
+            1
+        )
+
+
+        light_budget = budget * 0.20
+
+        fan_budget = budget * 0.25
+
+        furniture_budget = budget * 0.35
+
+        decor_budget = budget * 0.20
+
+
+        recommendations = [
+
+            {
+                "title":
+                room + " Lighting",
+
+                "description":
+                str(lights) +
+                " light(s) with modern design",
+
+                "budget":
+                "₹{:,.0f}".format(
+                    light_budget
+                ),
+
+                "platform":
+                "Amazon"
+            },
+
+
+            {
+                "title":
+                "Ceiling Fan",
+
+                "description":
+                str(fans) +
+                " energy-efficient fan(s)",
+
+                "budget":
+                "₹{:,.0f}".format(
+                    fan_budget
+                ),
+
+                "platform":
+                "Flipkart"
+            },
+
+
+            {
+                "title":
+                "Furniture",
+
+                "description":
+                str(tables) +
+                " table/furniture item(s)",
+
+                "budget":
+                "₹{:,.0f}".format(
+                    furniture_budget
+                ),
+
+                "platform":
+                "IKEA"
+            },
+
+
+            {
+                "title":
+                "Home Decor",
+
+                "description":
+                "Curtains, wall decor and accessories",
+
+                "budget":
+                "₹{:,.0f}".format(
+                    decor_budget
+                ),
+
+                "platform":
+                "Amazon"
+            }
+
+        ]
+
+
+    # PARTY PLANNER
+
+    elif planner == "party":
+
+        guests = data.get(
+            "guests",
+            20
+        )
+
+        event = data.get(
+            "event",
+            "Birthday"
+        )
+
+        venue = data.get(
+            "venue",
+            "Home"
+        )
+
+
+        catering = budget * 0.45
+
+        decoration = budget * 0.25
+
+        entertainment = budget * 0.20
+
+        accommodation = budget * 0.10
+
+
+        recommendations = [
+
+            {
+                "title":
+                "Catering",
+
+                "description":
+                "Food planning for " +
+                str(guests) +
+                " guests",
+
+                "budget":
+                "₹{:,.0f}".format(
+                    catering
+                ),
+
+                "platform":
+                "Swiggy / Zomato"
+            },
+
+
+            {
+                "title":
+                "Event Decoration",
+
+                "description":
+                event +
+                " decoration for " +
+                venue,
+
+                "budget":
+                "₹{:,.0f}".format(
+                    decoration
+                ),
+
+                "platform":
+                "Amazon"
+            },
+
+
+            {
+                "title":
+                "Entertainment",
+
+                "description":
+                "Music, games and event activities",
+
+                "budget":
+                "₹{:,.0f}".format(
+                    entertainment
+                ),
+
+                "platform":
+                "Local Vendors"
+            },
+
+
+            {
+                "title":
+                "Accommodation",
+
+                "description":
+                "Optional stay planning",
+
+                "budget":
+                "₹{:,.0f}".format(
+                    accommodation
+                ),
+
+                "platform":
+                "OYO"
+            }
+
+        ]
+
+
+    # JEWELRY PLANNER
+
+    elif planner == "jewelry":
+
+        occasion = data.get(
+            "occasion",
+            "Wedding"
+        )
+
+        style = data.get(
+            "style",
+            "Traditional"
+        )
+
+
+        necklace = budget * 0.60
+
+        earrings = budget * 0.20
+
+        accessories = budget * 0.20
+
+
+        recommendations = [
+
+            {
+                "title":
+                style +
+                " Necklace",
+
+                "description":
+                "Suitable for " +
+                occasion,
+
+                "budget":
+                "₹{:,.0f}".format(
+                    necklace
+                ),
+
+                "platform":
+                "Amazon"
+            },
+
+
+            {
+                "title":
+                "Matching Earrings",
+
+                "description":
+                "Earrings matching your " +
+                style +
+                " style",
+
+                "budget":
+                "₹{:,.0f}".format(
+                    earrings
+                ),
+
+                "platform":
+                "Flipkart"
+            },
+
+
+            {
+                "title":
+                "Accessories",
+
+                "description":
+                "Bracelet, bangles and accessories",
+
+                "budget":
+                "₹{:,.0f}".format(
+                    accessories
+                ),
+
+                "platform":
+                "Amazon"
+            }
+
+        ]
+
+
+    else:
+
+        return jsonify({
+
+            "success":
+            False,
+
+            "message":
+            "Invalid planner"
+
+        })
+
+
+    return jsonify({
+
+        "success":
+        True,
+
+        "planner":
+        planner,
+
+        "budget":
+        budget,
+
+        "recommendations":
+        recommendations
+
+    })
+
+
+# ---------------- RUN ----------------
+
+if __name__ == "__main__":
+
+    app.run(
+        debug=True,
+        host="127.0.0.1",
+        port=5000
+    )
